@@ -1,18 +1,26 @@
-name: Docker Image CI
+name: Docker Build and Push
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - master  # Adjust this to the branch you want to trigger the workflow on
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t osmanhaider121/docimage:${{ github.sha }} .
+          docker push osmanhaider121/docimage:${{ github.sha }}
+
+        env:
+          DOCKER_CLI_ASK_PASS: 0
+          DOCKER_BUILDKIT: 1
